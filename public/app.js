@@ -1,28 +1,39 @@
-const socket=io('ws://localhost:3000')
-const activity=document.querySelector('.activity')
-const msginput=document.querySelector('input')
+const socket = io('ws://localhost:3500')
 
-function sendMessage(e){
-    e.preventDefault();
-    
-    if(msginput.value){
-        socket.emit('message',msginput.value);
-        msginput.value=''
+const activity = document.querySelector('.activity')
+const msgInput = document.querySelector('input')
+
+function sendMessage(e) {
+    e.preventDefault()
+    if (msgInput.value) {
+        socket.emit('message', msgInput.value)
+        msgInput.value = ""
     }
-    msginput.focus()
+    msgInput.focus()
 }
-document.querySelector('form')
-    .addEventListener('submit',sendMessage)
 
-socket.on('message',(data)=>{
-    activity.textContent=''
-    const li=document.createElement('li')
-    li.textContent=data;
+document.querySelector('form')
+    .addEventListener('submit', sendMessage)
+
+// Listen for messages 
+socket.on("message", (data) => {
+    activity.textContent = ""
+    const li = document.createElement('li')
+    li.textContent = data
     document.querySelector('ul').appendChild(li)
 })
-msginput.addEventListener("keypress",()=>{
-    socket.emit('activity',socket.emit(socket.id.substring(0,5)))
+
+msgInput.addEventListener('keypress', () => {
+    socket.emit('activity', socket.id.substring(0, 5))
 })
-socket.on('activity',(name)=>{
-    activity.textContent=`${name} is typing..`
+
+let activityTimer
+socket.on("activity", (name) => {
+    activity.textContent = `${name} is typing...`
+
+    // Clear after 3 seconds 
+    clearTimeout(activityTimer)
+    activityTimer = setTimeout(() => {
+        activity.textContent = ""
+    }, 3000)
 })
